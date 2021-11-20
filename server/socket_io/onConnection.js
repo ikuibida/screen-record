@@ -4,11 +4,13 @@ const socketByUser = {}
 const dataChunks = {}
 
 export const onConnection = (socket) => {
-  socket.on('screenData:start', ({ data, username }) => {
+  socket.on('user:connect', (username) => {
     if (!socketByUser[socket.id]) {
       socketByUser[socket.id] = username
     }
+  })
 
+  socket.on('screenData:start', ({ data, username }) => {
     if (dataChunks[username]) {
       dataChunks[username].push(data)
     } else {

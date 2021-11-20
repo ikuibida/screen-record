@@ -20,6 +20,10 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    socketRef.current.emit('user:connect', username.current)
+  }, [])
+
+  useEffect(() => {
     ;(async () => {
       if (navigator.mediaDevices.getDisplayMedia) {
         try {
@@ -64,7 +68,7 @@ function App() {
   }, [screenStream])
 
   function startRecording() {
-    if (socketRef.current && screenStream && voiceStream && !mediaRecorder) {
+    if (screenStream && voiceStream && !mediaRecorder) {
       setRecording(true)
 
       videoRef.current.removeAttribute('src')
@@ -106,9 +110,10 @@ function App() {
       const videoBlob = new Blob(dataChunks, {
         type: 'video/webm'
       })
-      const videoSrc = URL.createObjectURL(videoBlob)
-      videoRef.current.src = videoSrc
 
+      const videoSrc = URL.createObjectURL(videoBlob)
+
+      videoRef.current.src = videoSrc
       linkRef.current.href = videoSrc
       linkRef.current.download = `${Date.now()}-${username.current}.webm`
 
@@ -120,7 +125,9 @@ function App() {
     if (!recording) {
       startRecording()
     } else {
-      mediaRecorder.stop()
+      if (mediaRecorder) {
+        mediaRecorder.stop()
+      }
     }
   }
 
@@ -128,10 +135,10 @@ function App() {
 
   return (
     <>
-      <h1>Screen Record App</h1>
+      <h1>Screen Recording App</h1>
       <video controls ref={videoRef}></video>
       <a ref={linkRef}>Download</a>
-      <button onClick={onClick} disabled={!screenStream}>
+      <button onClick={onClick} disabled={!voiceStream}>
         {!recording ? 'Start' : 'Stop'}
       </button>
     </>

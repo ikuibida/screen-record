@@ -9,14 +9,14 @@ ffmpeg.setFfmpegPath(ffmpegPath.path)
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-export const saveData = async (data, userId) => {
+export const saveData = async (data, username) => {
   const videoPath = join(__dirname, '../video')
   const tempPath = `${videoPath}/temp`
 
   const dirName = new Date().toLocaleDateString().replace(/\./g, '_')
   const dirPath = `${videoPath}/${dirName}`
 
-  const fileName = `${Date.now()}-${userId}.webm`
+  const fileName = `${Date.now()}-${username}.webm`
 
   const tempFilePath = `${tempPath}/${fileName}`
   const finalFilePath = `${dirPath}/${fileName}`
@@ -50,7 +50,7 @@ export const saveData = async (data, userId) => {
       ])
       .on('end', async () => {
         await unlink(tempFilePath)
-        console.log(`*** File ${fileName} was created`)
+        console.log(`*** File ${fileName} created`)
       })
       .save(finalFilePath, tempPath)
   } catch (e) {
