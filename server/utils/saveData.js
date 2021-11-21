@@ -1,24 +1,22 @@
-import ffmpegPath from '@ffmpeg-installer/ffmpeg'
-import ffmpeg from 'fluent-ffmpeg'
 import { Blob, Buffer } from 'buffer'
 import { mkdir, open, unlink, writeFile } from 'fs/promises'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
-ffmpeg.setFfmpegPath(ffmpegPath.path)
+import { path } from '@ffmpeg-installer/ffmpeg'
+import ffmpeg from 'fluent-ffmpeg'
+ffmpeg.setFfmpegPath(path)
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export const saveData = async (data, username) => {
   const videoPath = join(__dirname, '../video')
-  const tempPath = `${videoPath}/temp`
 
   const dirName = new Date().toLocaleDateString().replace(/\./g, '_')
   const dirPath = `${videoPath}/${dirName}`
 
   const fileName = `${Date.now()}-${username}.webm`
-
-  const tempFilePath = `${tempPath}/${fileName}`
+  const tempFilePath = `${dirPath}/temp-${fileName}`
   const finalFilePath = `${dirPath}/${fileName}`
 
   let fileHandle
@@ -52,7 +50,7 @@ export const saveData = async (data, username) => {
         await unlink(tempFilePath)
         console.log(`*** File ${fileName} created`)
       })
-      .save(finalFilePath, tempPath)
+      .save(finalFilePath, dirPath)
   } catch (e) {
     console.log('*** saveData', e)
   }

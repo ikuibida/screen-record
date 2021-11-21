@@ -4,7 +4,7 @@ const socketByUser = {}
 const dataChunks = {}
 
 export const onConnection = (socket) => {
-  socket.on('user:connect', (username) => {
+  socket.on('user:connected', (username) => {
     if (!socketByUser[socket.id]) {
       socketByUser[socket.id] = username
     }

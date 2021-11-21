@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Loader from 'react-loader-spinner'
-import io from 'socket.io-client'
+import { io } from 'socket.io-client'
 import './App.scss'
 
 const SERVER_URI = 'http://localhost:4000'
@@ -36,7 +36,7 @@ function App() {
           setLoading(false)
         }
       } else {
-        console.warn('getDisplayMedia not supported')
+        console.warn('*** getDisplayMedia not supported')
         setLoading(false)
       }
     })()
@@ -53,15 +53,13 @@ function App() {
             setVoiceStream(_voiceStream)
           } catch (e) {
             console.error('*** getUserMedia', e)
-            if (e.message && e.message.includes('denied')) {
-              setVoiceStream('denied')
-            }
+            setVoiceStream('unavailable')
           } finally {
             setLoading(false)
           }
         }
       } else {
-        console.warn('getUserMedia not supported')
+        console.warn('*** getUserMedia not supported')
         setLoading(false)
       }
     })()
@@ -76,15 +74,13 @@ function App() {
       linkRef.current.removeAttribute('download')
 
       let mediaStream
-      if (voiceStream === 'denied') {
+      if (voiceStream === 'unavailable') {
         mediaStream = screenStream
       } else {
         // const audioTracks = voiceStream.getAudioTracks()
-        // if (audioTracks && audioTracks.length) {
-        //   audioTracks.forEach(track => {
-        //     screenStream.addTrack(track)
-        //   })
-        // }
+        // audioTracks.forEach(track => {
+        //   screenStream.addTrack(track)
+        // })
         // mediaStream = screenStream
         mediaStream = new MediaStream([
           ...screenStream.getVideoTracks(),
@@ -103,22 +99,25 @@ function App() {
       mediaRecorder.onstop = stopRecording
       mediaRecorder.start(250)
     }
+  }
 
-    function stopRecording() {
-      socketRef.current.emit('screenData:end', username.current)
+  function stopRecording() {
+    setRecording(false)
 
-      const videoBlob = new Blob(dataChunks, {
-        type: 'video/webm'
-      })
+    socketRef.current.emit('screenData:end', username.current)
 
-      const videoSrc = URL.createObjectURL(videoBlob)
+    const videoBlob = new Blob(dataChunks, {
+      type: 'video/webm'
+    })
 
-      videoRef.current.src = videoSrc
-      linkRef.current.href = videoSrc
-      linkRef.current.download = `${Date.now()}-${username.current}.webm`
+    const videoSrc = URL.createObjectURL(videoBlob)
 
-      setRecording(false)
-    }
+    videoRef.current.src = videoSrc
+    linkRef.current.href = videoSrc
+    linkRef.current.download = `${Date.now()}-${username.current}.webm`
+
+    mediaRecorder = null
+    dataChunks = []
   }
 
   const onClick = () => {
